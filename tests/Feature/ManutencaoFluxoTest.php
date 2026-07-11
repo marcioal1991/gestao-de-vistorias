@@ -126,7 +126,7 @@ class ManutencaoFluxoTest extends TestCase
         $entrada = $vistoria->laudoEntrada;
 
         $comodo = $entrada->comodos()->create(['nome' => 'Sala']);
-        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta]);
+        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto.jpg']);
         $entrada->concluir();
 
         return $vistoria->fresh();

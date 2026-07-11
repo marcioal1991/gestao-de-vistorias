@@ -69,13 +69,13 @@ class VistoriaFluxoTest extends TestCase
 
         $entrada = $anterior->laudoEntrada;
         $comodo = $entrada->comodos()->create(['nome' => 'Sala']);
-        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta]);
+        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto.jpg']);
         $entrada->concluir();
 
         $saida = $anterior->laudoSaida->fresh();
         $saida->iniciarComShallowCopyDaEntrada();
         $saida->refresh();
-        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta]);
+        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto-saida.jpg']);
         $saida->concluir();
 
         Livewire::actingAs($user)
@@ -114,11 +114,44 @@ class VistoriaFluxoTest extends TestCase
         $this->assertFalse($entrada->podeSerConcluido());
         $this->assertFalse($entrada->concluir());
 
-        $item->update(['avaliacao' => AvaliacaoItem::Apta]);
+        $item->update(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto.jpg']);
 
         $this->assertTrue($entrada->fresh()->podeSerConcluido());
         $this->assertTrue($entrada->concluir());
         $this->assertEquals(StatusLaudo::Concluido, $entrada->fresh()->status);
+    }
+
+    public function test_laudo_nao_conclui_se_item_apta_nao_tiver_foto(): void
+    {
+        $user = User::factory()->create();
+        $vistoria = Vistoria::criarComLaudos($this->dadosVistoria(), $user);
+        $entrada = $vistoria->laudoEntrada;
+
+        $comodo = $entrada->comodos()->create(['nome' => 'Sala']);
+        $comodo->itemFotos()->create([
+            'descricao_avaliacao' => 'Parede sem rachaduras',
+            'avaliacao' => AvaliacaoItem::Apta,
+            'url_foto' => null,
+        ]);
+
+        $this->assertFalse($entrada->podeSerConcluido());
+        $this->assertFalse($entrada->concluir());
+    }
+
+    public function test_nao_permite_marcar_avaliacao_antes_de_enviar_foto(): void
+    {
+        $user = User::factory()->create();
+        $vistoria = Vistoria::criarComLaudos($this->dadosVistoria(), $user);
+        $entrada = $vistoria->laudoEntrada;
+
+        $comodo = $entrada->comodos()->create(['nome' => 'Sala']);
+        $item = $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Pendente]);
+
+        Livewire::actingAs($user)
+            ->test(\App\Livewire\Laudos\ItemFotoCard::class, ['itemFoto' => $item])
+            ->call('marcarAvaliacao', 'apta');
+
+        $this->assertEquals(AvaliacaoItem::Pendente, $item->fresh()->avaliacao);
     }
 
     public function test_shallow_copy_clona_comodos_sem_copiar_fotos(): void
@@ -161,7 +194,7 @@ class VistoriaFluxoTest extends TestCase
         $entrada = $vistoria->laudoEntrada;
 
         $comodo = $entrada->comodos()->create(['nome' => 'Quarto']);
-        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta]);
+        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto.jpg']);
         $entrada->concluir();
 
         $saida = $vistoria->laudoSaida->fresh();
@@ -169,7 +202,7 @@ class VistoriaFluxoTest extends TestCase
         $saida->refresh();
 
         $itemSaida = $saida->comodos->first()->itemFotos->first();
-        $itemSaida->update(['avaliacao' => AvaliacaoItem::Apta]);
+        $itemSaida->update(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto-saida.jpg']);
 
         $this->assertTrue($saida->fresh()->concluir());
         $this->assertEquals(StatusGeralVistoria::Concluida, $vistoria->fresh()->status_geral);

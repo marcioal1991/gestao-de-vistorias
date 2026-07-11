@@ -96,7 +96,9 @@ class Laudo extends Model
     }
 
     /**
-     * Um laudo só pode ser concluído se todos os itens estiverem "Aptas" (RF04).
+     * Um laudo só pode ser concluído se todos os itens tiverem foto enviada e
+     * estiverem marcados como "Apta" (RF04). Sem foto, o item não pode fechar
+     * o laudo mesmo que alguém tenha marcado a avaliação manualmente.
      */
     public function podeSerConcluido(): bool
     {
@@ -106,7 +108,12 @@ class Laudo extends Model
             return false;
         }
 
-        return $itens->where('avaliacao', '!=', AvaliacaoItem::Apta)->doesntExist();
+        return $itens
+            ->where(function ($query) {
+                $query->where('avaliacao', '!=', AvaliacaoItem::Apta)
+                    ->orWhereNull('url_foto');
+            })
+            ->doesntExist();
     }
 
     public function concluir(): bool

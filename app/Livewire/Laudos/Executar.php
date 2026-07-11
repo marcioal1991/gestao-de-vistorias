@@ -76,7 +76,7 @@ class Executar extends Component
         $this->erroConclusao = null;
 
         if (! $this->laudo->concluir()) {
-            $this->erroConclusao = 'Não é possível concluir: cadastre ao menos um item e marque todas as fotos como "Apta".';
+            $this->erroConclusao = 'Não é possível concluir: cadastre ao menos um item, envie a foto de cada um e marque todos como "Apta".';
 
             return;
         }
@@ -92,7 +92,7 @@ class Executar extends Component
 
         $itens = $this->laudo->comodos->flatMap->itemFotos;
         $totalItens = $itens->count();
-        $itensAptos = $itens->where('avaliacao', AvaliacaoItem::Apta)->count();
+        $itensAptos = $itens->where('avaliacao', AvaliacaoItem::Apta)->whereNotNull('url_foto')->count();
 
         return view('livewire.laudos.executar', [
             'ehSaida' => $this->laudo->tipo === TipoLaudo::Saida,

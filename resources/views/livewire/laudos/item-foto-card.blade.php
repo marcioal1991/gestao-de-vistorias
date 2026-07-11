@@ -108,14 +108,18 @@
     @endif
 
     {{-- Avaliação humana (decisão final do usuário) --}}
+    @php $semFoto = ! $itemFoto->urlPublica(); @endphp
     <div class="mt-3 grid grid-cols-2 gap-2">
-        <button wire:click="marcarAvaliacao('apta')" @disabled($laudoConcluido)
+        <button wire:click="marcarAvaliacao('apta')" @disabled($laudoConcluido || $semFoto)
                 class="py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60 {{ $itemFoto->avaliacao->value === 'apta' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700' }}">
             🟢 Apta
         </button>
-        <button wire:click="marcarAvaliacao('nao_apta')" @disabled($laudoConcluido)
+        <button wire:click="marcarAvaliacao('nao_apta')" @disabled($laudoConcluido || $semFoto)
                 class="py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-1.5 disabled:opacity-60 {{ $itemFoto->avaliacao->value === 'nao_apta' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700' }}">
             🔴 Não Apta
         </button>
     </div>
+    @if ($semFoto && ! $laudoConcluido)
+        <p class="text-[11px] text-gray-400 mt-1.5 text-center">Tire uma foto para poder avaliar este item.</p>
+    @endif
 </div>

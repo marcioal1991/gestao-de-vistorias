@@ -41,13 +41,14 @@ class AnaliseFinalIaTest extends TestCase
         $comodo->itemFotos()->create([
             'descricao_avaliacao' => 'Parede sem rachaduras',
             'avaliacao' => AvaliacaoItem::Apta,
+            'url_foto' => 'vistorias/1/1/foto.jpg',
         ]);
         $entrada->concluir();
 
         $saida = $vistoria->laudoSaida->fresh();
         $saida->iniciarComShallowCopyDaEntrada();
         $saida->refresh();
-        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta]);
+        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto-saida.jpg']);
         $saida->concluir();
 
         $vistoria->refresh();
@@ -82,6 +83,7 @@ class AnaliseFinalIaTest extends TestCase
         $itemEntrada = $comodo->itemFotos()->create([
             'descricao_avaliacao' => 'MARCADOR_ENTRADA_TETO_OK',
             'avaliacao' => AvaliacaoItem::Apta,
+            'url_foto' => 'vistorias/1/1/foto.jpg',
         ]);
         $itemEntrada->forceFill(['created_at' => now()->subDays(10)])->save();
         $entrada->concluir();
@@ -99,7 +101,7 @@ class AnaliseFinalIaTest extends TestCase
         $saida->iniciarComShallowCopyDaEntrada();
         $saida->refresh();
         $itemSaida = $saida->comodos->first()->itemFotos->first();
-        $itemSaida->update(['descricao_avaliacao' => 'MARCADOR_SAIDA_TETO_RECUPERADO', 'avaliacao' => AvaliacaoItem::Apta]);
+        $itemSaida->update(['descricao_avaliacao' => 'MARCADOR_SAIDA_TETO_RECUPERADO', 'avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto-saida.jpg']);
         $itemSaida->forceFill(['created_at' => now()])->save();
         $saida->concluir();
 
@@ -123,13 +125,13 @@ class AnaliseFinalIaTest extends TestCase
         $entrada = $vistoria->laudoEntrada;
 
         $comodo = $entrada->comodos()->create(['nome' => 'Sala']);
-        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta]);
+        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto.jpg']);
         $entrada->concluir();
 
         $saida = $vistoria->laudoSaida->fresh();
         $saida->iniciarComShallowCopyDaEntrada();
         $saida->refresh();
-        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta]);
+        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta, 'url_foto' => 'vistorias/1/1/foto-saida.jpg']);
         $saida->concluir();
 
         $vistoria->refresh();

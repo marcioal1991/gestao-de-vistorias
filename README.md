@@ -11,7 +11,7 @@ cp .env.example .env   # se ainda não existir
 docker compose up -d --build
 ```
 
-A aplicação estará em **http://localhost:8090** (porta configurável via `APP_PORT` no `.env`).
+A aplicação estará em **http://localhost:3000** (porta configurável via `APP_PORT` no `.env`).
 
 No primeiro `up`, o container `app` automaticamente:
 - instala dependências do Composer e do NPM;

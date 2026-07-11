@@ -113,8 +113,18 @@ class ItemFotoCard extends Component
         }
     }
 
+    /**
+     * Não é possível avaliar (Apta/Não Apta) um item sem antes enviar a foto —
+     * evita concluir o laudo com itens "aprovados" que nunca foram fotografados.
+     */
     public function marcarAvaliacao(string $valor): void
     {
+        if (! $this->itemFoto->url_foto) {
+            Log::warning('ItemFotoCard: tentativa de avaliar item sem foto bloqueada', ['item_foto_id' => $this->itemFoto->id]);
+
+            return;
+        }
+
         $this->itemFoto->update(['avaliacao' => AvaliacaoItem::from($valor)]);
         $this->itemFoto->refresh();
         $this->dispatch('item-atualizado');
