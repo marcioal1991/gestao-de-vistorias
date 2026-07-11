@@ -118,12 +118,24 @@ class OpenAIVistoriaService
         }
 
         $prompt = <<<'PROMPT'
-            Compare a foto da Entrada (Imagem 1) com a foto da Saída (Imagem 2) deste item vistoriado.
-            Identifique se houve piora, novos danos, quebras ou sujeira. Retorne estritamente um objeto
-            JSON com a seguinte estrutura:
+            Compare a foto da Entrada (Imagem 1) com a foto da Saída (Imagem 2) deste mesmo item vistoriado.
+
+            Verifique com rigor:
+            - Se há qualquer piora, dano novo, quebra, mancha, sujeira, desgaste ou diferença visível na
+              foto de Saída que não existia (ou era menor) na foto de Entrada.
+            - Se as duas fotos realmente parecem mostrar o mesmo local/item. Se as imagens não parecem
+              corresponder ao mesmo local/item, ou não é possível comparar com confiança, trate isso
+              também como reprovação.
+
+            Seja rigoroso e cauteloso: na dúvida, ou diante de qualquer inconsistência entre as fotos,
+            prefira reprovar (retornar "Não Apta") a aprovar incorretamente. Só retorne "Apta" quando
+            tiver certeza de que o item está nas mesmas condições (ou melhores) da entrada, sem qualquer
+            dano, sujeira ou inconsistência visível.
+
+            Retorne estritamente um objeto JSON com a seguinte estrutura, sem nenhum texto fora do JSON:
             {
-              "analise": "Texto em português resumindo as diferenças ou confirmando que está igual",
-              "sugestao": "Apta ou Não Apta (retorne 'Não Apta' se houver danos evidentes causados na saída, caso contrário retorne 'Apta')"
+              "analise": "Texto em português resumindo as diferenças encontradas, ou confirmando que o item está idêntico à entrada",
+              "sugestao": "Apta" ou "Não Apta"
             }
             PROMPT;
 
@@ -183,10 +195,12 @@ class OpenAIVistoriaService
                 return null;
             }
 
-            $sugestaoTexto = Str::lower((string) $dados['sugestao']);
-            $sugestao = Str::contains($sugestaoTexto, 'não') || Str::contains($sugestaoTexto, 'nao')
-                ? AvaliacaoItem::NaoApta
-                : AvaliacaoItem::Apta;
+            $sugestao = $this->interpretarSugestaoApta((string) $dados['sugestao']);
+
+            Log::info('OpenAI [compararFotos]: sugestão interpretada', [
+                'texto_bruto' => $dados['sugestao'],
+                'sugestao_final' => $sugestao->value,
+            ]);
 
             return [
                 'analise' => (string) $dados['analise'],
@@ -362,10 +376,10 @@ class OpenAIVistoriaService
                 return null;
             }
 
-            $assertivoTexto = Str::lower((string) $dados['assertivo']);
-            $assertivo = Str::contains($assertivoTexto, 'não') || Str::contains($assertivoTexto, 'nao')
-                ? AssertividadeVistoria::NaoAssertivo
-                : AssertividadeVistoria::Assertivo;
+            $assertivoTexto = Str::lower(trim((string) $dados['assertivo']));
+            $assertivo = Str::contains($assertivoTexto, 'assertivo') && ! Str::contains($assertivoTexto, ['não', 'nao'])
+                ? AssertividadeVistoria::Assertivo
+                : AssertividadeVistoria::NaoAssertivo;
 
             return [
                 'analise' => (string) $dados['analise'],
@@ -379,6 +393,22 @@ class OpenAIVistoriaService
 
             return null;
         }
+    }
+
+    /**
+     * Interpreta o texto de sugestão retornado pela IA. Propositalmente enviesado
+     * para "Não Apta": só devolve Apta quando o texto diz claramente "apta" e não
+     * contém nenhuma negação. Qualquer ambiguidade ou resposta inesperada cai em
+     * "Não Apta", para nunca aprovar silenciosamente um item com problema.
+     */
+    private function interpretarSugestaoApta(string $sugestaoBruta): AvaliacaoItem
+    {
+        $texto = Str::lower(trim($sugestaoBruta));
+
+        $temNegacao = Str::contains($texto, ['não apta', 'nao apta', 'não-apta', 'inapta', 'reprovad', 'não', 'nao']);
+        $diApta = Str::contains($texto, 'apta') && ! $temNegacao;
+
+        return $diApta ? AvaliacaoItem::Apta : AvaliacaoItem::NaoApta;
     }
 
     private function paraDataUri(string $caminhoNoDisco): string

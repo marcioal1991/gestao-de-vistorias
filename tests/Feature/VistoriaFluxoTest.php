@@ -33,6 +33,63 @@ class VistoriaFluxoTest extends TestCase
         $this->assertEquals(StatusLaudo::Pendente, $vistoria->laudoSaida->status);
     }
 
+    public function test_nao_permite_duas_vistorias_em_andamento_para_o_mesmo_imovel(): void
+    {
+        $user = User::factory()->create();
+        Vistoria::criarComLaudos([
+            'codigo_imovel' => 'AP-DUPLICADO',
+            'endereco' => 'Rua A, 1',
+            'tipo_imovel' => 'Apartamento',
+            'locatario' => 'Fulano',
+        ], $user);
+
+        Livewire::actingAs($user)
+            ->test(\App\Livewire\Vistorias\Criar::class)
+            ->set('codigo_imovel', 'AP-DUPLICADO')
+            ->set('endereco', 'Rua B, 2')
+            ->set('tipo_imovel', 'Casa')
+            ->set('locatario', 'Ciclano')
+            ->call('salvar')
+            ->assertHasErrors(['codigo_imovel' => 'unique']);
+
+        $this->assertEquals(1, Vistoria::where('codigo_imovel', 'AP-DUPLICADO')->count());
+    }
+
+    public function test_permite_nova_vistoria_apos_a_anterior_do_mesmo_imovel_ser_concluida(): void
+    {
+        \Illuminate\Support\Facades\Http::fake(['api.openai.com/*' => \Illuminate\Support\Facades\Http::response([], 200)]);
+
+        $user = User::factory()->create();
+        $anterior = Vistoria::criarComLaudos([
+            'codigo_imovel' => 'AP-REABERTURA',
+            'endereco' => 'Rua A, 1',
+            'tipo_imovel' => 'Apartamento',
+            'locatario' => 'Fulano',
+        ], $user);
+
+        $entrada = $anterior->laudoEntrada;
+        $comodo = $entrada->comodos()->create(['nome' => 'Sala']);
+        $comodo->itemFotos()->create(['avaliacao' => AvaliacaoItem::Apta]);
+        $entrada->concluir();
+
+        $saida = $anterior->laudoSaida->fresh();
+        $saida->iniciarComShallowCopyDaEntrada();
+        $saida->refresh();
+        $saida->comodos->first()->itemFotos->first()->update(['avaliacao' => AvaliacaoItem::Apta]);
+        $saida->concluir();
+
+        Livewire::actingAs($user)
+            ->test(\App\Livewire\Vistorias\Criar::class)
+            ->set('codigo_imovel', 'AP-REABERTURA')
+            ->set('endereco', 'Rua Nova, 3')
+            ->set('tipo_imovel', 'Apartamento')
+            ->set('locatario', 'Novo Inquilino')
+            ->call('salvar')
+            ->assertHasNoErrors();
+
+        $this->assertEquals(2, Vistoria::where('codigo_imovel', 'AP-REABERTURA')->count());
+    }
+
     public function test_laudo_saida_bloqueado_enquanto_entrada_nao_concluido(): void
     {
         $user = User::factory()->create();

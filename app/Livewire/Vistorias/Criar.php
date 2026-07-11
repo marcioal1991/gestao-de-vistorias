@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Vistorias;
 
+use App\Enums\StatusGeralVistoria;
 use App\Models\Vistoria;
 use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -21,10 +23,21 @@ class Criar extends Component
     protected function rules(): array
     {
         return [
-            'codigo_imovel' => ['required', 'string', 'max:50'],
+            'codigo_imovel' => [
+                'required', 'string', 'max:50',
+                Rule::unique('vistorias', 'codigo_imovel')
+                    ->where('status_geral', StatusGeralVistoria::EmAndamento->value),
+            ],
             'endereco' => ['required', 'string', 'max:255'],
             'tipo_imovel' => ['required', 'in:Casa,Apartamento'],
             'locatario' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'codigo_imovel.unique' => 'Já existe uma vistoria em andamento para este imóvel.',
         ];
     }
 
