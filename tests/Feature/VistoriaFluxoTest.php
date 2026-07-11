@@ -97,6 +97,8 @@ class VistoriaFluxoTest extends TestCase
 
     public function test_vistoria_conclui_automaticamente_quando_ambos_laudos_concluidos(): void
     {
+        \Illuminate\Support\Facades\Http::fake(['api.openai.com/*' => \Illuminate\Support\Facades\Http::response([], 200)]);
+
         $user = User::factory()->create();
         $vistoria = Vistoria::criarComLaudos($this->dadosVistoria(), $user);
         $entrada = $vistoria->laudoEntrada;

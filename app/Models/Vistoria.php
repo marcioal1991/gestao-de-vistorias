@@ -2,18 +2,24 @@
 
 namespace App\Models;
 
+use App\Enums\AssertividadeVistoria;
 use App\Enums\StatusGeralVistoria;
 use App\Enums\StatusLaudo;
 use App\Enums\StatusManutencao;
 use App\Enums\TipoLaudo;
+use App\Services\OpenAIVistoriaService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Log;
 
-#[Fillable(['user_id', 'codigo_imovel', 'endereco', 'tipo_imovel', 'locatario', 'status_geral'])]
+#[Fillable([
+    'user_id', 'codigo_imovel', 'endereco', 'tipo_imovel', 'locatario', 'status_geral',
+    'parecer_ia_final', 'assertivo_ia', 'analisado_em',
+])]
 class Vistoria extends Model
 {
     use HasFactory;
@@ -22,6 +28,8 @@ class Vistoria extends Model
     {
         return [
             'status_geral' => StatusGeralVistoria::class,
+            'assertivo_ia' => AssertividadeVistoria::class,
+            'analisado_em' => 'datetime',
         ];
     }
 
@@ -95,9 +103,12 @@ class Vistoria extends Model
 
     /**
      * A vistoria só fecha quando os dois laudos estiverem concluídos (RF04).
+     * Ao fechar, dispara a análise final da IA sobre toda a linha do tempo.
      */
     public function atualizarStatusGeral(): void
     {
+        $jaEstavaConcluida = $this->status_geral === StatusGeralVistoria::Concluida;
+
         $ambosConcluidos = $this->laudos()
             ->where('status', '!=', StatusLaudo::Concluido)
             ->doesntExist();
@@ -107,5 +118,79 @@ class Vistoria extends Model
         if ($this->status_geral !== $novoStatus) {
             $this->update(['status_geral' => $novoStatus]);
         }
+
+        if ($novoStatus === StatusGeralVistoria::Concluida && ! $jaEstavaConcluida) {
+            $this->gerarAnaliseFinalComIa();
+        }
+    }
+
+    /**
+     * Lê, em ordem cronológica, as descrições de todas as fotos da vistoria
+     * (Laudo de Entrada, Manutenções e Laudo de Saída) e pede à IA um parecer
+     * sobre se o laudo foi assertivo. É best-effort: se a IA falhar, a vistoria
+     * continua concluída normalmente, só o parecer fica em branco.
+     */
+    public function gerarAnaliseFinalComIa(): void
+    {
+        try {
+            $linhaDoTempo = $this->construirLinhaDoTempoParaIa();
+
+            $resultado = app(OpenAIVistoriaService::class)->avaliarVistoriaCompleta($linhaDoTempo);
+
+            if ($resultado) {
+                $this->update([
+                    'parecer_ia_final' => $resultado['analise'],
+                    'assertivo_ia' => $resultado['assertivo'],
+                    'analisado_em' => now(),
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Vistoria: exceção ao gerar análise final da IA', [
+                'vistoria_id' => $this->id,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function construirLinhaDoTempoParaIa(): string
+    {
+        $this->loadMissing(['laudos.comodos.itemFotos', 'manutencoes.comodo']);
+
+        $eventos = collect();
+
+        foreach ($this->laudos as $laudo) {
+            foreach ($laudo->comodos as $comodo) {
+                foreach ($comodo->itemFotos as $item) {
+                    $eventos->push([
+                        'data' => $item->created_at,
+                        'texto' => sprintf(
+                            'Laudo de %s — Cômodo "%s": %s (Avaliação: %s)%s',
+                            $laudo->tipo->label(),
+                            $comodo->nome,
+                            $item->descricao_avaliacao ?: '(sem descrição preenchida)',
+                            $item->avaliacao->label(),
+                            $item->parecer_ia ? ' [Parecer da IA na comparação: '.$item->parecer_ia.']' : ''
+                        ),
+                    ]);
+                }
+            }
+        }
+
+        foreach ($this->manutencoes as $manutencao) {
+            $eventos->push([
+                'data' => $manutencao->created_at,
+                'texto' => sprintf(
+                    'Manutenção — Cômodo "%s": %s (Custo: R$ %s, Status: %s)',
+                    $manutencao->comodo->nome,
+                    $manutencao->descricao_defeito ?: '(sem descrição preenchida)',
+                    number_format((float) $manutencao->valor_custo, 2, ',', '.'),
+                    $manutencao->status->label()
+                ),
+            ]);
+        }
+
+        return $eventos->sortBy('data')->values()
+            ->map(fn ($evento, $indice) => ($indice + 1).'. ['.$evento['data']->format('d/m/Y H:i').'] '.$evento['texto'])
+            ->implode("\n");
     }
 }

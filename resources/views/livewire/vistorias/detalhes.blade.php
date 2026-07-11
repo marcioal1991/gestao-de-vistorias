@@ -34,6 +34,29 @@
         </dl>
     </div>
 
+    {{-- Análise final da IA: só existe quando a vistoria está Concluída --}}
+    @if ($vistoria->status_geral === \App\Enums\StatusGeralVistoria::Concluida)
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">✨ Análise Final da IA</h2>
+                @if ($vistoria->assertivo_ia)
+                    <span class="text-xs font-medium px-2 py-1 rounded-full {{ $vistoria->assertivo_ia->badgeClass() }}">
+                        {{ $vistoria->assertivo_ia->label() }}
+                    </span>
+                @endif
+            </div>
+
+            @if ($vistoria->parecer_ia_final)
+                <p class="text-sm text-gray-700">{{ $vistoria->parecer_ia_final }}</p>
+                <p class="text-[11px] text-gray-400 mt-2">Gerado em {{ $vistoria->analisado_em?->format('d/m/Y H:i') }}</p>
+            @else
+                <p class="text-sm text-gray-400">
+                    Análise da IA indisponível para esta vistoria (verifique se a API da OpenAI está configurada).
+                </p>
+            @endif
+        </div>
+    @endif
+
     {{-- Fluxo: Entrada -> Manutenções -> Saída --}}
     <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Etapas</h2>
 
