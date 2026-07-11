@@ -12,7 +12,7 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Cômodo</label>
             <select wire:model="comodo_id"
-                    class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500">
+                    class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500">
                 <option value="">Selecione...</option>
                 @foreach ($comodos as $comodo)
                     <option value="{{ $comodo->id }}">{{ $comodo->nome }}</option>
@@ -40,7 +40,7 @@
                 </label>
             </div>
 
-            <div wire:loading wire:target="foto" class="mt-2 text-xs text-indigo-600 flex items-center gap-1.5">
+            <div wire:loading wire:target="foto" class="mt-2 text-xs text-brand-600 flex items-center gap-1.5">
                 <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -67,7 +67,7 @@
                  class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-base">R$</span>
                 <input type="text" inputmode="numeric" :value="formatado" @input="digitar"
-                       class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 pl-11 pr-4 focus:border-indigo-500 focus:ring-indigo-500"
+                       class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 pl-11 pr-4 focus:border-brand-500 focus:ring-brand-500"
                        placeholder="0,00">
             </div>
             @error('valor_custo') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
@@ -76,13 +76,13 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Descrição do defeito</label>
             <textarea wire:model="descricao_defeito" rows="3"
-                      class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
+                      class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500"
                       placeholder="Descreva o problema encontrado"></textarea>
             @error('descricao_defeito') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
 
         <button type="submit"
-                class="w-full py-3.5 rounded-xl bg-indigo-600 text-white font-semibold shadow active:bg-indigo-700"
+                class="w-full py-3.5 rounded-xl bg-brand-600 text-white font-semibold shadow active:bg-accent-500"
                 wire:loading.attr="disabled" wire:target="salvar">
             <span wire:loading.remove wire:target="salvar">Salvar Manutenção</span>
             <span wire:loading wire:target="salvar">Salvando...</span>

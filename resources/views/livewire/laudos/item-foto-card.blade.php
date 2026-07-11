@@ -39,7 +39,7 @@
     {{-- Descrição --}}
     <label class="block text-[11px] font-medium text-gray-500 uppercase tracking-wide mb-1">Descrição da avaliação</label>
     <textarea wire:model.blur="descricao" rows="2" @disabled($laudoConcluido)
-              class="w-full rounded-lg border-gray-300 shadow-sm text-sm py-2 px-3 focus:border-indigo-500 focus:ring-indigo-500 disabled:bg-gray-100"
+              class="w-full rounded-lg border-gray-300 shadow-sm text-sm py-2 px-3 focus:border-brand-500 focus:ring-brand-500 disabled:bg-gray-100"
               placeholder="O que está sendo avaliado nesta foto?"></textarea>
 
     {{-- Captura de foto --}}
@@ -84,7 +84,7 @@
             @endunless
         </div>
 
-        <div wire:loading wire:target="novaFoto" class="mt-2 text-xs text-indigo-600 flex items-center gap-1.5">
+        <div wire:loading wire:target="novaFoto" class="mt-2 text-xs text-brand-600 flex items-center gap-1.5">
             <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>

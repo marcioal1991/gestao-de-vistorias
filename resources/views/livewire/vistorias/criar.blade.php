@@ -12,7 +12,7 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Código do Imóvel</label>
             <input type="text" wire:model="codigo_imovel"
-                   class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
+                   class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500"
                    placeholder="Ex: AP-1024">
             @error('codigo_imovel') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
@@ -20,7 +20,7 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
             <input type="text" wire:model="endereco"
-                   class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
+                   class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500"
                    placeholder="Rua, número, bairro">
             @error('endereco') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
@@ -29,11 +29,11 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Imóvel</label>
             <div class="grid grid-cols-2 gap-3">
                 <button type="button" wire:click="$set('tipo_imovel', 'Casa')"
-                        class="py-3 rounded-xl border text-sm font-medium {{ $tipo_imovel === 'Casa' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300' }}">
+                        class="py-3 rounded-xl border text-sm font-medium {{ $tipo_imovel === 'Casa' ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-700 border-gray-300' }}">
                     Casa
                 </button>
                 <button type="button" wire:click="$set('tipo_imovel', 'Apartamento')"
-                        class="py-3 rounded-xl border text-sm font-medium {{ $tipo_imovel === 'Apartamento' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300' }}">
+                        class="py-3 rounded-xl border text-sm font-medium {{ $tipo_imovel === 'Apartamento' ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-700 border-gray-300' }}">
                     Apartamento
                 </button>
             </div>
@@ -43,13 +43,13 @@
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Locatário</label>
             <input type="text" wire:model="locatario"
-                   class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
+                   class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500"
                    placeholder="Nome completo">
             @error('locatario') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
         </div>
 
         <button type="submit"
-                class="w-full py-3.5 rounded-xl bg-indigo-600 text-white font-semibold shadow active:bg-indigo-700"
+                class="w-full py-3.5 rounded-xl bg-brand-600 text-white font-semibold shadow active:bg-accent-500"
                 wire:loading.attr="disabled" wire:target="salvar">
             <span wire:loading.remove wire:target="salvar">Criar Vistoria</span>
             <span wire:loading wire:target="salvar">Salvando...</span>

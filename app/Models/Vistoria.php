@@ -58,6 +58,11 @@ class Vistoria extends Model
         return $this->hasMany(Manutencao::class);
     }
 
+    public function documentos(): HasMany
+    {
+        return $this->hasMany(Documento::class);
+    }
+
     /**
      * A aba de Manutenções só fica habilitada para edição após o Laudo de
      * Entrada ser concluído.

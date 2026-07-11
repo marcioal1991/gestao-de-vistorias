@@ -16,8 +16,7 @@ new class extends Component
 <nav class="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
     <div class="flex items-center justify-between h-14 px-4">
         <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2 font-semibold text-gray-800">
-            <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white text-sm">GV</span>
-            <span class="text-base">{{ config('app.name') }}</span>
+            <img src="{{ asset('images/logo.svg') }}" alt="{{ config('app.name') }}" class="h-8 w-auto">
         </a>
 
         <x-dropdown align="right" width="48">

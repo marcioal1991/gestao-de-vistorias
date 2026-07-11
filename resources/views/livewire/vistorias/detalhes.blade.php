@@ -143,4 +143,19 @@
             </div>
         @endif
     </div>
+
+    {{-- Documentos anexos (sempre disponível, não faz parte do fluxo sequencial) --}}
+    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mt-6 mb-3">Arquivos</h2>
+    <a href="{{ route('documentos.index', $vistoria) }}" wire:navigate
+       class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="font-semibold text-gray-900">📎 Documentos</p>
+                <p class="text-xs text-gray-500 mt-0.5">Contratos, laudos externos e outros arquivos</p>
+            </div>
+            <span class="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                {{ $vistoria->documentos()->count() }}
+            </span>
+        </div>
+    </a>
 </div>

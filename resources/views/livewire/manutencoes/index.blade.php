@@ -62,7 +62,7 @@
 
     <div class="fixed inset-x-0 bottom-6 max-w-md mx-auto px-6 flex justify-end pointer-events-none">
         <a href="{{ route('manutencoes.criar', $vistoria) }}" wire:navigate
-           class="pointer-events-auto h-14 w-14 rounded-full bg-indigo-600 text-white shadow-lg flex items-center justify-center active:bg-indigo-700"
+           class="pointer-events-auto h-14 w-14 rounded-full bg-brand-600 text-white shadow-lg flex items-center justify-center active:bg-accent-500"
            aria-label="Nova Manutenção">
             <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

@@ -16,7 +16,7 @@
     </div>
 
     @if ($ehSaida)
-        <div class="bg-indigo-50 border border-indigo-100 text-indigo-800 text-xs rounded-xl p-3 mb-4">
+        <div class="bg-brand-50 border border-brand-100 text-brand-800 text-xs rounded-xl p-3 mb-4">
             Os cômodos e descrições foram copiados do Laudo de Entrada. Compare a foto antiga com a nova foto de saída em cada item.
         </div>
     @endif
@@ -81,14 +81,14 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Cômodo</label>
                         <input type="text" wire:model="novoComodoNome"
-                               class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
+                               class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500"
                                placeholder="Ex: Sala, Cozinha">
                         @error('novoComodoNome') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                         <textarea wire:model="novoComodoDescricao" rows="2"
-                                  class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-indigo-500 focus:ring-indigo-500"
+                                  class="w-full rounded-xl border-gray-300 shadow-sm text-base py-3 px-4 focus:border-brand-500 focus:ring-brand-500"
                                   placeholder="Ex: Pintura fosca, piso laminado"></textarea>
                         @error('novoComodoDescricao') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -98,14 +98,14 @@
                             Cancelar
                         </button>
                         <button wire:click="adicionarComodo"
-                                class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold active:bg-indigo-700">
+                                class="flex-1 py-3 rounded-xl bg-brand-600 text-white font-semibold active:bg-accent-500">
                             Adicionar
                         </button>
                     </div>
                 </div>
             @else
                 <button wire:click="$set('mostrarFormComodo', true)"
-                        class="w-full py-3.5 rounded-xl border-2 border-dashed border-indigo-300 text-indigo-600 font-medium active:bg-indigo-50">
+                        class="w-full py-3.5 rounded-xl border-2 border-dashed border-brand-300 text-brand-600 font-medium active:bg-brand-50">
                     + Adicionar Cômodo
                 </button>
             @endif

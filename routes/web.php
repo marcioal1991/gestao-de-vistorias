@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Dashboard;
+use App\Livewire\Documentos\Index as DocumentosIndex;
 use App\Livewire\Laudos\Executar as ExecutarLaudo;
 use App\Livewire\Manutencoes\Criar as CriarManutencao;
 use App\Livewire\Manutencoes\Index as ManutencoesIndex;
@@ -22,6 +23,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('vistorias/{vistoria}/manutencoes', ManutencoesIndex::class)->name('manutencoes.index');
     Route::get('vistorias/{vistoria}/manutencoes/criar', CriarManutencao::class)->name('manutencoes.criar');
+
+    Route::get('vistorias/{vistoria}/documentos', DocumentosIndex::class)->name('documentos.index');
 
     Route::view('profile', 'profile')->name('profile');
 });

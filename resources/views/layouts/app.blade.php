@@ -4,7 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <meta name="theme-color" content="#4f46e5">
+        <meta name="theme-color" content="#873a4e">
+        <link rel="icon" href="{{ asset('images/logo.svg') }}" type="image/svg+xml">
 
         <title>{{ config('app.name', 'Gestão de Vistorias') }}</title>
 
