@@ -201,6 +201,83 @@ class OpenAIVistoriaService
         }
     }
 
+    /**
+     * Módulo de Manutenção: analisa a foto do defeito/reparo e devolve uma
+     * descrição técnica curta para pré-preencher o campo do relatório.
+     */
+    public function descreverDefeitoManutencao(string $caminhoNoDisco): ?string
+    {
+        if (! $this->habilitada()) {
+            Log::info('OpenAI [descreverDefeitoManutencao]: ignorado, API key não configurada');
+
+            return null;
+        }
+
+        $inicio = microtime(true);
+        Log::info('OpenAI [descreverDefeitoManutencao]: iniciando chamada', ['modelo' => $this->model, 'foto' => $caminhoNoDisco]);
+
+        try {
+            $resposta = Http::withToken($this->apiKey)
+                ->timeout(280)
+                ->post(self::ENDPOINT, [
+                    'model' => $this->model,
+                    'max_completion_tokens' => 1000,
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => [
+                                [
+                                    'type' => 'text',
+                                    'text' => 'Analise esta foto enviada pelo vistoriador durante o período de '.
+                                        'manutenção do imóvel. Identifique o defeito físico ou problema de '.
+                                        'conservação visível na imagem (ex: infiltração, telha quebrada, fiação '.
+                                        'exposta, trinco quebrado) e gere uma descrição técnica e direta em '.
+                                        'português, com no máximo 15 palavras, para preencher o relatório de reparos.',
+                                ],
+                                [
+                                    'type' => 'image_url',
+                                    'image_url' => ['url' => $this->paraDataUri($caminhoNoDisco)],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]);
+
+            $duracao = round(microtime(true) - $inicio, 2);
+
+            if ($resposta->failed()) {
+                Log::warning('OpenAI [descreverDefeitoManutencao]: falha na chamada', [
+                    'duracao_s' => $duracao,
+                    'status' => $resposta->status(),
+                    'body' => $resposta->body(),
+                ]);
+
+                return null;
+            }
+
+            if ($resposta->json('choices.0.finish_reason') === 'length') {
+                Log::warning('OpenAI [descreverDefeitoManutencao]: resposta truncada por limite de tokens', ['duracao_s' => $duracao]);
+            }
+
+            $texto = $resposta->json('choices.0.message.content');
+
+            Log::info('OpenAI [descreverDefeitoManutencao]: concluído', [
+                'duracao_s' => $duracao,
+                'tokens' => $resposta->json('usage'),
+                'obteve_texto' => filled($texto),
+            ]);
+
+            return $texto ? trim($texto) : null;
+        } catch (\Throwable $e) {
+            Log::error('OpenAI [descreverDefeitoManutencao]: exceção', [
+                'duracao_s' => round(microtime(true) - $inicio, 2),
+                'message' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
     private function paraDataUri(string $caminhoNoDisco): string
     {
         $conteudo = Storage::disk('public')->get($caminhoNoDisco);

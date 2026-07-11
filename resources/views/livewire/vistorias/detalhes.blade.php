@@ -34,8 +34,8 @@
         </dl>
     </div>
 
-    {{-- Laudos --}}
-    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Laudos</h2>
+    {{-- Fluxo: Entrada -> Manutenções -> Saída --}}
+    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Etapas</h2>
 
     <div class="space-y-3">
         @php $entrada = $vistoria->laudoEntrada; @endphp
@@ -51,6 +51,35 @@
                 </span>
             </div>
         </a>
+
+        {{-- Manutenções: só habilita depois do Laudo de Entrada concluído --}}
+        @if ($vistoria->manutencoesHabilitadas())
+            @php $pendentes = $vistoria->manutencoesPendentesCount(); @endphp
+            <a href="{{ route('manutencoes.index', $vistoria) }}" wire:navigate
+               class="block bg-white rounded-xl shadow-sm border border-gray-100 p-4 active:bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-900">🛠️ Manutenções da Locação</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Reparos registrados durante a locação</p>
+                    </div>
+                    <span class="text-xs font-medium px-2 py-1 rounded-full {{ $pendentes > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800' }}">
+                        {{ $pendentes > 0 ? $pendentes.' pendente'.($pendentes > 1 ? 's' : '') : 'Em dia' }}
+                    </span>
+                </div>
+            </a>
+        @else
+            <div class="bg-gray-100 rounded-xl border border-gray-200 p-4 opacity-70">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-500">🛠️ Manutenções da Locação</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Bloqueado até concluir a Entrada</p>
+                    </div>
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                </div>
+            </div>
+        @endif
 
         @php $saida = $vistoria->laudoSaida; $liberado = $saida->podeSerIniciado(); @endphp
         @if ($liberado)
@@ -71,12 +100,23 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="font-semibold text-gray-500">Laudo de Saída</p>
-                        <p class="text-xs text-gray-400 mt-0.5">Bloqueado até concluir a Entrada</p>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            @if ($entrada->status !== \App\Enums\StatusLaudo::Concluido)
+                                Bloqueado até concluir a Entrada
+                            @else
+                                Bloqueado por manutenções pendentes
+                            @endif
+                        </p>
                     </div>
                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                     </svg>
                 </div>
+                @if ($entrada->status === \App\Enums\StatusLaudo::Concluido && $vistoria->temManutencoesPendentes())
+                    <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-3">
+                        ⚠️ Existem manutenções pendentes. Conclua-as para liberar o laudo de saída.
+                    </p>
+                @endif
             </div>
         @endif
     </div>

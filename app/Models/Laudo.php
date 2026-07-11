@@ -42,7 +42,8 @@ class Laudo extends Model
     }
 
     /**
-     * O Laudo de Saída só pode ser iniciado se o de Entrada estiver concluído (RF04).
+     * O Laudo de Saída só pode ser iniciado se o de Entrada estiver concluído e
+     * não houver manutenções "Em Aberto" pendentes na vistoria.
      */
     public function podeSerIniciado(): bool
     {
@@ -50,7 +51,11 @@ class Laudo extends Model
             return true;
         }
 
-        return $this->vistoria->laudoEntrada?->status === StatusLaudo::Concluido;
+        if ($this->vistoria->laudoEntrada?->status !== StatusLaudo::Concluido) {
+            return false;
+        }
+
+        return ! $this->vistoria->temManutencoesPendentes();
     }
 
     public function foiIniciado(): bool

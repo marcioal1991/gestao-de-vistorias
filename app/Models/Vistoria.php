@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\StatusGeralVistoria;
 use App\Enums\StatusLaudo;
+use App\Enums\StatusManutencao;
 use App\Enums\TipoLaudo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,6 +43,30 @@ class Vistoria extends Model
     public function laudoSaida(): HasOne
     {
         return $this->hasOne(Laudo::class)->where('tipo', TipoLaudo::Saida);
+    }
+
+    public function manutencoes(): HasMany
+    {
+        return $this->hasMany(Manutencao::class);
+    }
+
+    /**
+     * A aba de Manutenções só fica habilitada para edição após o Laudo de
+     * Entrada ser concluído.
+     */
+    public function manutencoesHabilitadas(): bool
+    {
+        return $this->laudoEntrada?->status === StatusLaudo::Concluido;
+    }
+
+    public function manutencoesPendentesCount(): int
+    {
+        return $this->manutencoes()->where('status', StatusManutencao::EmAberto)->count();
+    }
+
+    public function temManutencoesPendentes(): bool
+    {
+        return $this->manutencoes()->where('status', StatusManutencao::EmAberto)->exists();
     }
 
     /**

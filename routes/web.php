@@ -2,6 +2,8 @@
 
 use App\Livewire\Dashboard;
 use App\Livewire\Laudos\Executar as ExecutarLaudo;
+use App\Livewire\Manutencoes\Criar as CriarManutencao;
+use App\Livewire\Manutencoes\Index as ManutencoesIndex;
 use App\Livewire\Vistorias\Criar as CriarVistoria;
 use App\Livewire\Vistorias\Detalhes as DetalhesVistoria;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +19,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('vistorias/{vistoria}', DetalhesVistoria::class)->name('vistorias.show');
 
     Route::get('laudos/{laudo}', ExecutarLaudo::class)->name('laudos.executar');
+
+    Route::get('vistorias/{vistoria}/manutencoes', ManutencoesIndex::class)->name('manutencoes.index');
+    Route::get('vistorias/{vistoria}/manutencoes/criar', CriarManutencao::class)->name('manutencoes.criar');
 
     Route::view('profile', 'profile')->name('profile');
 });

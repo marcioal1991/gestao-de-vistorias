@@ -3,6 +3,7 @@
 namespace App\Livewire\Laudos;
 
 use App\Enums\AvaliacaoItem;
+use App\Enums\StatusLaudo;
 use App\Enums\TipoLaudo;
 use App\Models\Laudo;
 use Illuminate\Contracts\View\View;
@@ -26,7 +27,14 @@ class Executar extends Component
     public function mount(Laudo $laudo): void
     {
         abort_unless($laudo->vistoria->user_id === auth()->id(), 403);
-        abort_unless($laudo->podeSerIniciado(), 403, 'O Laudo de Entrada precisa estar concluído antes de iniciar o de Saída.');
+
+        if ($laudo->tipo === TipoLaudo::Saida && $laudo->vistoria->laudoEntrada?->status !== StatusLaudo::Concluido) {
+            abort(403, 'O Laudo de Entrada precisa estar concluído antes de iniciar o de Saída.');
+        }
+
+        if ($laudo->tipo === TipoLaudo::Saida && $laudo->vistoria->temManutencoesPendentes()) {
+            abort(403, 'Existem manutenções pendentes. Conclua-as para liberar o laudo de saída.');
+        }
 
         if ($laudo->tipo === TipoLaudo::Saida && ! $laudo->foiIniciado()) {
             $laudo->iniciarComShallowCopyDaEntrada();
