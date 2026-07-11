@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: vistorias_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-vistorias}
+      DB_USERNAME: ${DB_USERNAME:-vistorias}
+      DB_PASSWORD: ${DB_PASSWORD:-vistorias}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - vistorias
+
+  webserver:
+    image: nginx:1.27-alpine
+    container_name: vistorias_webserver
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - vistorias
+
+  db:
+    image: postgres:16-alpine
+    container_name: vistorias_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-vistorias}
+      POSTGRES_USER: ${DB_USERNAME:-vistorias}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-vistorias}
+    volumes:
+      - vistorias_db_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_FORWARD:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-vistorias} -d ${DB_DATABASE:-vistorias}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - vistorias
+
+networks:
+  vistorias:
+    driver: bridge
+
+volumes:
+  vistorias_db_data:
+    driver: local
