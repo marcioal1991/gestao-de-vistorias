@@ -22,10 +22,8 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-if [ ! -f "public/build/manifest.json" ]; then
-    echo ">> Compilando assets (Vite)..."
-    npm run build
-fi
+echo ">> Compilando assets (Vite)..."
+npm run build
 
 echo ">> Aguardando banco de dados em ${DB_HOST}:${DB_PORT}..."
 until php -r "new PDO('pgsql:host=${DB_HOST};port=${DB_PORT};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');" 2>/dev/null; do
